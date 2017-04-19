@@ -38,10 +38,21 @@ class Card {
 	}
 	render(mode = 0){
 		if(mode==0){
-			return  '<div class="card ' + this.colorName() + '"><div class="card-label">'+ this.cardName() +'</div></div>'
+			return  '<li class="card ' + this.colorName() + '"><div class="card-label">'+ this.cardName() +'</div></li>'
 		} else {
-			return  '<div class="card ' + this.colorName() + '"><div class="card-label">'+ this.number.toString() +'</div></div>'
+			return  '<li class="card ' + this.colorName() + '"><div class="card-label">'+ this.number.toString() +'</div></li>'
 		}
+		// if(mode==0){
+		// 	return  '<div class="card ' + this.colorName() + '"><div class="card-label">'+ this.cardName() +'</div></div>'
+		// } else {
+		// 	return  '<div class="card ' + this.colorName() + '"><div class="card-label">'+ this.number.toString() +'</div></div>'
+		// }
+	}
+	match(other){
+		if(this.color==5) return true;
+		if(this.color==other.color) return true;
+		if(this.number==other.number) return true;
+		return false;
 	}
 };
 
@@ -58,14 +69,20 @@ class Deck{
 			this.cards.push(new Card(13,5));
 			this.cards.push(new Card(14,5));
 		}
+		this.shuffle();
+	}
+	shuffle(){
 		this.cards = shuffleArray(this.cards);
 	}
 	update(){
-		// $(this.selector).html(this.cards.length.toString());
 		$(this.selector).html('<h2>Deck:</h2>' + new Card(this.cards.length.toString(),5).render(1));
 	}
 	draw(){
-		return this.cards.pop();
+		var card = this.cards.pop();
+		if(card.number>=13){
+			card.color = 5;
+		}
+		return card;
 	}
 };
 
@@ -73,11 +90,20 @@ class Pile{
 	constructor(){
 		this.selector = "#pile";
 		this.cards = [];
+		this.top = null;
 	}
 	play(card){
+		if(this.top!=null){this.cards.push(this.top);}
 		this.top = card;
-		this.cards.push(card);
 		$(this.selector).prepend(card.render());
+	}
+	recall(){
+		return this.cards;
+	}
+	clear(){
+		this.cards = [];
+		$(this.selector).empty();
+		$(this.selector).prepend(this.top.render());
 	}
 }
 
@@ -89,27 +115,31 @@ class Player{
 		$("#game-stage").append(div_string.replace(/playerid/g,player_id.toString()));
 		this.label_selector = "#player-" + this.id.toString() + "-label";
 		this.hand_selector = "#player-" + this.id.toString() + "-hand";
+		this.blur();
 	}
 	focus(){
-		$(this.label_selector).css({
-			"border-right" : "15px solid white",
-			"padding-right" : "0px"
-		});
+		this.active = true;
+		$(this.label_selector).addClass("player-turn");
+		$(this.hand_selector).addClass("player-turn");
 	}
 	blur(){
-		$(this.label_selector).css({
-			"border-right" : "5px dashed #888888",
-			"padding-right" : "10px"
-		});
-	}
-	update(){
-		$(this.hand_selector).empty();
-		for(var i=0;i<this.hand.length;i++){
-			$(this.hand_selector).append(this.hand[i].render());
-		}
+		this.active = false;
+		$(this.label_selector).removeClass("player-turn");
+		$(this.hand_selector).removeClass("player-turn");
 	}
 	recv(card){
 		this.hand.push(card);
+		$(card.render()).hide().prependTo(this.hand_selector).slideDown("fast");
+	}
+	setBinds(callback){
+		var selector = this.hand_selector + " li"
+		var is_active = this.active
+		$(selector).click(function(e){
+			if(is_active){
+				$(selector).unbind();
+				callback($(this).index());
+			}
+    	});
 	}
 };
 
@@ -117,32 +147,63 @@ class Game{
 	constructor(num_players,debug_log){
 		this.players = [];
 		this.num_players = num_players;
+		this.debug = debug_log;
 		// Restart UI
 		this.deck = new Deck();
 		this.pile = new Pile();
-		debug_log.log("Creating game for " + num_players.toString() + " players")
+		this.debug.log("Creating game for " + num_players.toString() + " players")
 		$("#game-stage").empty();
 		for(var i=1;i<=num_players;i++){
 			this.players.push(new Player(i))
 		}
-		// Deal Cards
-		debug_log.log("Dealing cards")
-		for(var i=0;i<7;i++){
-			for(var j=0;j<this.num_players;j++)
-			this.players[j].recv(this.deck.draw());
-		}
-		for(var i=0;i<num_players;i++){
-			this.players[i].update();
-			this.players[i].blur();
-		}
-		do {
-			this.pile.play(this.deck.draw());
-		} while (this.pile.top.number >= 10)
-		this.deck.update();
+
 		// Set Game Variables
 		this.current_player = randomNumber(num_players-1);
 		this.game_direction = randomNumber(1);
+		if(this.game_direction==0){ this.game_direction = -1}
 		this.players[this.current_player].focus();
+
+		// Deal Cards
+		
+		debug_log.log("Dealing cards")
+		for(var i=0;i<7;i++){
+			for(var j=0;j<this.num_players;j++){
+				this.nextPlayer();
+				this.draw();
+			}
+		}
+
+		// Set first card in pile
+		do {
+			this.pile.play(this.deck.draw());
+		} while (this.pile.top.number >= 10);
+		
+		this.deck.update();
+		this.procTurn(this.current_player);
+	}
+	nextPlayer(){
+		this.players[this.current_player].blur();
+		this.current_player = (this.current_player + this.game_direction + this.num_players*2) % this.num_players;
+		this.players[this.current_player].focus();
+		return this.current_player;
+	}
+	draw(){
+		// this.debug.log("Dealing to player " + this.current_player.toString() );
+		if(this.deck.cards.length==0){
+			this.deck.cards = [];
+			this.deck.cards = this.pile.recall();
+			this.deck.shuffle();
+		}
+		this.players[this.current_player].recv(this.deck.draw());
+	}
+	procTurn(){
+		var game = this;
+		var player = this.players[this.current_player];
+		player.setBinds(function(index){
+			console.log(index);
+			game.nextPlayer();
+			game.procTurn();
+		});
 	}
 };
 
@@ -160,5 +221,5 @@ class DebugLog{
 
 $(document).ready(function() {
 	debug = new DebugLog("#console");
-    g = new Game(2,debug)
+    g = new Game(4,debug)
 });

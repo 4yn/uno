@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Uno Simulator</title>
+	<link rel="stylesheet" href="bootstrap.css">
+	<link rel="stylesheet" href="uno.css">
+	<script src="jquery.js"></script>
+	<script src="unosim.js"></script>
+</head>
+<body>
+	<div class="container">
+		<div class="navbar navbar-default">
+			<div class="navbar-header">
+				<div class="navbar-brand">Uno Simulator</div>
+			</div>
+			<ul class="nav navbar-nav">
+				<li><a href="#">Reset</a></li>
+			</ul>
+		</div>
+		<div class="row">
+			<div class="col-xs-2 stack" id="deck">
+				<h2>Deck:</h2> 
+				<div class="card card-info">
+					<div class="card-label" id="card-count">
+						52
+					</div>
+				</div>
+			</div>
+			<div class="col-xs-10 stack" id="stack">
+				<h2>Played Cards:</h2> 
+				<ul class="hand" id="stack">
+				</ul>
+			</div>
+			<div class="col-xs-2 player-label" id="player-1-label">
+				<div class="player-name">
+					P1
+				</div>
+			</div>
+			<div class="col-xs-10 player-hand">
+				<ul class="hand" id="player-1-hand">
+				</ul>
+			</div>
+			<div class="col-xs-2 player-label" id="player-2-label">
+				<div class="player-name">
+					P2
+				</div>
+			</div>
+			<div class="col-xs-10 player-hand">
+				<ul class="hand" id="player-2-hand">
+				</ul>
+			</div>
+			<div class="col-xs-12 well" id="console-col">
+				<h6>Log:</h6>
+				<ul class="monospace" id="console">
+				</ul>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

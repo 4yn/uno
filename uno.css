@@ -1,0 +1,78 @@
+.player-hand{
+	margin-top:20px;
+}
+
+.player-label{
+	margin-top:20px;
+	height:140px;
+	text-align: center;
+}
+
+#deck{
+	padding-left:30px;
+}
+
+.player-name{
+	font-size:35px;
+	padding-top: 30px;
+}
+
+#console-col{
+	height:200px;
+	overflow: auto;
+}
+
+ul#console{
+	list-style: none outside none;
+
+}
+
+ul.hand{
+	list-style: none outside none;
+	margin: 0px;
+	padding: 0px;
+	height:140px;
+	list-style-type:none;
+	white-space:nowrap;
+	overflow-x:auto;
+}
+
+.card{
+	display:inline-block;
+	margin-top:10px;
+	min-height:100px;
+	width:70px;
+	text-align: center;
+	vertical-align: middle;
+	margin-right:10px;
+	font-size:35px;
+	border:1px solid white;
+	border-radius:5px;
+}
+
+.card-label{
+	display:inline-block;
+	/*min-height:100px;*/
+	/*width:70px;*/
+	margin-top:20px;
+}
+
+.card.card-red{
+	background-color: #d9534f;
+}
+
+.card.card-green{
+	background-color: #5cb85c;
+}
+
+.card.card-yellow{
+	background-color: #f0ad4e;
+}
+
+.card.card-blue{
+	background-color: #5bc0de;
+}
+
+.card.card-info{
+	background-color: grey;
+}

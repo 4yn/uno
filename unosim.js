@@ -23,7 +23,7 @@ class Card {
 			case 2: return "card-yellow";
 			case 3: return "card-blue";
 			case 4: return "card-green";
-			case 5: return "card-info";
+			case 5: return "card-wild";
 			case 6: return "card-utility";
 		}
 	}
@@ -38,6 +38,17 @@ class Card {
 		}
 		return this.number.toString();
 	}
+	cardScore(){
+		switch(this.number){
+			case 10: return 20;
+			case 11: return 20;
+			case 12: return 20;
+			case 13: return 50;
+			case 14: return 50;
+			case 15: return 0;
+		}
+		return this.number;
+	}
 	render(mode = 0){
 		if(mode==0){
 			return  '<li class="card ' + this.colorName() + '"><div class="card-label">'+ this.cardName() +'</div></li>'
@@ -46,8 +57,8 @@ class Card {
 		}
 	}
 	match(other){
-		if(this.color==5) return true;
-		if(this.color==6) return true;
+		if(this.color==5) return false;
+		if(this.number>=13) return true;
 		if(this.color==other.color) return true;
 		if(this.number==other.number) return true;
 		return false;
@@ -73,7 +84,7 @@ class Deck{
 		this.cards = shuffleArray(this.cards);
 	}
 	update(){
-		$(this.selector).html('<h2>Deck:</h2>' + new Card(this.cards.length.toString(),5).render(1));
+		$(this.selector).html('<h2>Deck:</h2>' + new Card(this.cards.length.toString(),6).render(1));
 	}
 	draw(){
 		var card = this.cards.pop();
@@ -109,10 +120,12 @@ class Player{
 	constructor(player_id){
 		this.id = player_id;
 		this.hand = [];
-		var div_string = '<div class="col-xs-2 player-label" id="player-playerid-label"><div class="player-name">Pplayerid</div></div><div class="col-xs-10 player-hand"><ul class="hand" id="player-playerid-hand"></ul></div>'
-		$("#game-stage").append(div_string.replace(/playerid/g,player_id.toString()));
+		this.score = 0;
+		var div_string = '<div class="col-xs-2 player-label" id="player-{playerid}-label"><div class="player-name">P{playerid}</div></br><div class="player-score" id="player-{playerid}-score"></div></div><div class="col-xs-10 player-hand"><ul class="hand" id="player-{playerid}-hand"></ul></div>'
+		$("#game-stage").append(div_string.replace(/{playerid}/g,player_id.toString()));
 		this.label_selector = "#player-" + this.id.toString() + "-label";
 		this.hand_selector = "#player-" + this.id.toString() + "-hand";
+		this.score_selector = "#player-" + this.id.toString() + "-score";
 		this.recv(new Card(15,6));
 		this.blur();
 	}
@@ -126,23 +139,49 @@ class Player{
 		$(this.label_selector).removeClass("player-turn");
 		$(this.hand_selector).removeClass("player-turn");
 	}
+	win(){
+		$(this.label_selector).addClass("player-win");
+	}
+	updateScore(){
+		$(this.score_selector).html(this.score.toString());
+	}
 	recv(card){
 		this.hand.push(card);
+		this.score += card.cardScore();
 		$(card.render()).hide().appendTo(this.hand_selector).slideDown("fast");
+		this.updateScore();
 	}
 	send(index){
 		$(this.hand_selector + " li").eq(index).remove();
 		var played_card = this.hand[index];
 		this.hand.splice(index,1)
+		this.score -= played_card.cardScore();
+		this.updateScore();
 		return played_card;
 	}
 	setBinds(callback){
 		var selector = this.hand_selector + " li"
+		var hand = this.hand
 		var is_active = this.active
 		$(selector).click(function(e){
 			if(is_active){
 				$(selector).unbind();
-				callback($(this).index());
+				var idx = $(this).index();
+				if(hand[idx].color==5){
+					var c = 1;
+					var x = e.pageX - $(this).offset().left;
+					var y = e.pageY - $(this).offset().top;
+					if(x > $(this).width() / 2){
+						c += 1;
+					}
+					if(y > $(this).height() * 7 / 10){
+						c += 2;
+					}else if(y  > $(this).height() * 3 / 10){
+						c = 5;
+					}
+					hand[idx].color = c;
+				}
+				setTimeout(callback(idx),0);
 			}
     	});
 	}
@@ -153,6 +192,7 @@ class Game{
 		this.players = [];
 		this.num_players = num_players;
 		this.debug = debug_log;
+
 		// Restart UI
 		this.deck = new Deck();
 		this.pile = new Pile();
@@ -169,7 +209,6 @@ class Game{
 		this.players[this.current_player].focus();
 
 		// Deal Cards
-		
 		debug_log.log("Dealing cards")
 		for(var i=0;i<7;i++){
 			for(var j=0;j<this.num_players;j++){
@@ -206,15 +245,18 @@ class Game{
 		var game = this;
 		var player = this.players[this.current_player];
 		player.setBinds(function(index){
-			console.log(index);
 			if(player.hand[index].match(game.pile.top)){
 				if(index==0){
-					// Draw Car
-					game.draw()
+					// Draw Card
+					game.draw();
 					game.deck.update();
 				} else {
 					// Play Card
 					game.pile.play(player.send(index));
+					if(player.hand.length==1){
+						setTimeout(game.endGame(),window.sim_delay);
+						return 0;
+					}
 					if(game.pile.top.number==10){
 						game.nextPlayer();
 					}else if(game.pile.top.number==11){
@@ -231,10 +273,16 @@ class Game{
 						game.draw();
 					}
 				}
+				// Check for win
 				game.nextPlayer();
 			}
-			game.procTurn();
+			setTimeout(game.procTurn(),window.sim_delay);
 		});
+	}
+	endGame(){
+		// TODO: tabulate scores
+		this.players[this.current_player].blur();
+		this.players[this.current_player].win();
 	}
 };
 
@@ -251,6 +299,7 @@ class DebugLog{
 }
 
 $(document).ready(function() {
+	window.sim_delay=0;
 	debug = new DebugLog("#console");
-    g = new Game(4,debug)
+    g = new Game(4,debug);
 });

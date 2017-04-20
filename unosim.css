@@ -20,12 +20,12 @@ body{
 	font-size:35px;
 	border: 2px solid #888888;
 	border-radius:5px;
-	transition: all 0.1s ease-in-out;
+	transition: all 0.3s ease-in-out;
 	filter: grayscale(0.4);
 }
 
 .card-label{
-	display:inline-block;
+	/*display:inline-block;*/
 	margin-top:20px;
 }
 
@@ -33,7 +33,11 @@ body{
 .card.card-green{background-color: #5cb85c;}
 .card.card-yellow{background-color: #f0ad4e;}
 .card.card-blue{background-color: #5bc0de;}
-.card.card-info{background-color: #222222;}
+.card.card-wild{
+	background-image: url(wild.png);
+	background-size: 100% 100%;
+	background-repeat: no-repeat;
+}
 .card.card-utility{background-color: #2b3e50;}
 
 .player-turn > .card{
@@ -69,9 +73,18 @@ body{
 	padding-right: 0px;
 }
 
+.player-label.player-win{
+	border-right: 15px solid #5cb85c;
+	padding-right: 0px;
+}
+
 .player-name{
 	font-size:35px;
-	padding-top: 30px;
+	padding-top: 5px;
+}
+
+.player-score{
+	font-size:20px;
 }
 
 .player-hand{margin-top:15px;}

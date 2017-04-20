@@ -34,6 +34,7 @@ body{
 .card.card-yellow{background-color: #f0ad4e;}
 .card.card-blue{background-color: #5bc0de;}
 .card.card-info{background-color: #222222;}
+.card.card-utility{background-color: #2b3e50;}
 
 .player-turn > .card{
 	border: 4px solid #eeeeee;

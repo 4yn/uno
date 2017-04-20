@@ -24,6 +24,7 @@ class Card {
 			case 3: return "card-blue";
 			case 4: return "card-green";
 			case 5: return "card-info";
+			case 6: return "card-utility";
 		}
 	}
 	cardName(){
@@ -33,6 +34,7 @@ class Card {
 			case 12: return "RV";
 			case 13: return "WI";
 			case 14: return "W4";
+			case 15: return "+";
 		}
 		return this.number.toString();
 	}
@@ -42,14 +44,10 @@ class Card {
 		} else {
 			return  '<li class="card ' + this.colorName() + '"><div class="card-label">'+ this.number.toString() +'</div></li>'
 		}
-		// if(mode==0){
-		// 	return  '<div class="card ' + this.colorName() + '"><div class="card-label">'+ this.cardName() +'</div></div>'
-		// } else {
-		// 	return  '<div class="card ' + this.colorName() + '"><div class="card-label">'+ this.number.toString() +'</div></div>'
-		// }
 	}
 	match(other){
 		if(this.color==5) return true;
+		if(this.color==6) return true;
 		if(this.color==other.color) return true;
 		if(this.number==other.number) return true;
 		return false;
@@ -58,7 +56,7 @@ class Card {
 
 class Deck{
 	constructor(){
-		this.selector = "#deck"
+		this.selector = "#deck";
 		this.cards = []
 		for(var i=1;i<=4;i++){
 			this.cards.push(new Card(0,i));
@@ -115,6 +113,7 @@ class Player{
 		$("#game-stage").append(div_string.replace(/playerid/g,player_id.toString()));
 		this.label_selector = "#player-" + this.id.toString() + "-label";
 		this.hand_selector = "#player-" + this.id.toString() + "-hand";
+		this.recv(new Card(15,6));
 		this.blur();
 	}
 	focus(){
@@ -129,7 +128,13 @@ class Player{
 	}
 	recv(card){
 		this.hand.push(card);
-		$(card.render()).hide().prependTo(this.hand_selector).slideDown("fast");
+		$(card.render()).hide().appendTo(this.hand_selector).slideDown("fast");
+	}
+	send(index){
+		$(this.hand_selector + " li").eq(index).remove();
+		var played_card = this.hand[index];
+		this.hand.splice(index,1)
+		return played_card;
 	}
 	setBinds(callback){
 		var selector = this.hand_selector + " li"
@@ -189,19 +194,45 @@ class Game{
 	}
 	draw(){
 		// this.debug.log("Dealing to player " + this.current_player.toString() );
+		this.players[this.current_player].recv(this.deck.draw());
 		if(this.deck.cards.length==0){
 			this.deck.cards = [];
 			this.deck.cards = this.pile.recall();
+			this.pile.clear();
 			this.deck.shuffle();
 		}
-		this.players[this.current_player].recv(this.deck.draw());
 	}
 	procTurn(){
 		var game = this;
 		var player = this.players[this.current_player];
 		player.setBinds(function(index){
 			console.log(index);
-			game.nextPlayer();
+			if(player.hand[index].match(game.pile.top)){
+				if(index==0){
+					// Draw Car
+					game.draw()
+					game.deck.update();
+				} else {
+					// Play Card
+					game.pile.play(player.send(index));
+					if(game.pile.top.number==10){
+						game.nextPlayer();
+					}else if(game.pile.top.number==11){
+						game.nextPlayer();
+						game.draw();
+						game.draw();
+					}else if(game.pile.top.number==12){
+						game.game_direction *= -1;
+					}else if(game.pile.top.number==14){
+						game.nextPlayer();
+						game.draw();
+						game.draw();
+						game.draw();
+						game.draw();
+					}
+				}
+				game.nextPlayer();
+			}
 			game.procTurn();
 		});
 	}

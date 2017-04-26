@@ -13,16 +13,20 @@
 			<div class="navbar-header">
 				<div class="navbar-brand">Uno Simulator</div>
 			</div>
-			<ul class="nav navbar-nav">
-				<li><a href="#">Reset</a></li>
-			</ul>
-		</div>
-		<div class="row" id="game-footer">
-			<div class="col-xs-12 well" id="console-col">
-				<h6>Log:</h6>
-				<ul class="monospace" id="console">
-				</ul>
-			</div>
+			<!-- <ul class="nav navbar-nav">
+				<li><a href="#" id="start-sim">Go</a></li>
+			</ul> -->
+			<form class="navbar-form">
+				<div class="input-group">
+					<span class="input-group-addon">Number of Simulations</span>
+					<input id="input-num-sims" type="number" class="form-control" name="msg" placeholder="" value="20">
+				</div>
+				<div class="input-group">
+					<span class="input-group-addon">HP</span>
+					<input id="input-hp" type="number" class="form-control" name="msg" placeholder="" value="1000">
+				</div>
+				<button class="btn btn-info" onclick="restartSim()" id="btn-start-sim">Go</button>
+		    </form>
 		</div>
 		<div class="row" id="game-header">
 			<div class="col-xs-2 stack" id="deck">
@@ -40,6 +44,13 @@
 			</div>
 		</div>
 		<div class="row" id="game-stage">
+		</div>
+		<div class="row" id="game-footer">
+			<div class="col-xs-12 well" id="console-col">
+				<h6>Log:</h6>
+				<ul class="monospace" id="console">
+				</ul>
+			</div>
 		</div>
 	</div>
 </body>

@@ -385,7 +385,7 @@ class Simulation{
 		window.debug.log(JSON.stringify(this.players))
 		if(this.sim_left==0){
 			// end sim
-
+			$('#btn-start-sim').prop('disabled', false);
 		} else {
 			var simulation = this;
 			setTimeout(function(){simulation.startSim()},window.sim_restart_delay);
@@ -432,6 +432,26 @@ function randomPlayer(my_cards,top_card){
 
 /* GAME CODE BEGINS HERE */
 
+let s;
+
+function restartSim(){
+	window.debug.clear();
+	$('#btn-start-sim').prop('disabled', true);
+
+	var loops = $('#input-num-sims').val();
+	var maxhp = $('#input-hp').val();
+	console.log(loops);
+	console.log(maxhp);
+	s = new Simulation(
+    	[
+    		{"name":"P1","ai":greedyPlayer},
+    		{"name":"P2","ai":greedyPlayer},
+    		{"name":"P3","ai":randomPlayer},
+    		{"name":"P4","ai":randomPlayer}
+    	],
+    	maxhp,loops);
+}
+
 $(document).ready(function() {
 	debug = new DebugLog("#console");
 	window.sim_delay=0;
@@ -445,12 +465,4 @@ $(document).ready(function() {
     		{"name":"P4","ai":randomPlayer}
     	]
     	);*/
-    s = new Simulation(
-    	[
-    		{"name":"P1","ai":greedyPlayer},
-    		{"name":"P2","ai":greedyPlayer},
-    		{"name":"P3","ai":randomPlayer},
-    		{"name":"P4","ai":randomPlayer}
-    	],
-    	1000,20);
 });

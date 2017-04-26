@@ -8,6 +8,14 @@ body{
                                   supported by Chrome and Opera */
 }
 
+#input-hp{
+    width: 100px;
+}
+
+#input-num-sims{
+    width: 100px;
+} 
+
 .card{
 	cursor: pointer;
 	display:inline-block;
@@ -63,7 +71,7 @@ body{
 	margin-top:15px;
 	height:120px;
 	text-align: center;
-	transition: all 0.3s ease-in-out;
+	transition: all 0.1s ease-in-out;
 	border-right: 5px solid #888888;
 	padding-right: 10px;
 }
